@@ -4,6 +4,19 @@ A fast cli tool that decrypts data encrypted in your database by the prisma
 middleware
 [prisma-field-encryption](https://github.com/47ng/prisma-field-encryption#readme)
 
+## Installation
+
+```sh
+brew tap sagefarrenholz/prisma-decrypt
+brew install prisma-decrypt
+```
+
+or via cargo:
+
+```sh
+cargo install prisma-decrypt
+```
+
 # Usage
 
 Using `PRISMA_FIELD_ENCRYPTION_KEY` environment variable:

@@ -1,0 +1,90 @@
+name: Release
+on:
+    push:
+        tags: ["v*"]
+
+jobs:
+    build-and-release:
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+            - name: Install cross-compilation dependencies
+              run: |
+                  rustup target add aarch64-apple-darwin
+                  rustup target add x86_64-apple-darwin
+
+            - name: Get version from tag
+              id: version
+              run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+            - name: Build Intel binary
+              run: cargo build --release --target x86_64-apple-darwin
+
+            - name: Build Apple Silicon binary
+              run: cargo build --release --target aarch64-apple-darwin
+
+            - name: Package binaries
+              run: |
+                  mkdir -p dist
+
+                  # Package Intel binary
+                  tar -czf dist/prisma-decrypt-macos-intel.tar.gz \
+                    -C target/x86_64-apple-darwin/release prisma-decrypt
+
+                  # Package Apple Silicon binary
+                  tar -czf dist/prisma-decrypt-macos-arm64.tar.gz \
+                    -C target/aarch64-apple-darwin/release prisma-decrypt
+
+            - name: Calculate SHA256 hashes
+              id: hashes
+              run: |
+                  INTEL_SHA=$(shasum -a 256 dist/prisma-decrypt-macos-intel.tar.gz | cut -d' ' -f1)
+                  ARM_SHA=$(shasum -a 256 dist/prisma-decrypt-macos-arm64.tar.gz | cut -d' ' -f1)
+                  echo "intel_sha=$INTEL_SHA" >> $GITHUB_OUTPUT
+                  echo "arm_sha=$ARM_SHA" >> $GITHUB_OUTPUT
+                  echo "Intel SHA256: $INTEL_SHA"
+                  echo "ARM64 SHA256: $ARM_SHA"
+
+            - name: Publish to crates.io
+              env:
+                  CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+              run: cargo publish
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: dist/*
+                  generate_release_notes: true
+                  body: |
+                      ## Installation
+
+                      ### Homebrew
+                      ```bash
+                      brew tap sagefarrenholz/prisma-decrypt
+                      brew install prisma-decrypt
+                      ```
+
+                      ### Manual Download
+                      - **Intel Mac**: [prisma-decrypt-macos-intel.tar.gz](https://github.com/sagefarrenholz/prisma-decrypt/releases/download/${{ github.ref_name }}/prisma-decrypt-macos-intel.tar.gz)
+                      - **Apple Silicon Mac**: [prisma-decrypt-macos-arm64.tar.gz](https://github.com/sagefarrenholz/prisma-decrypt/releases/download/${{ github.ref_name }}/prisma-decrypt-macos-arm64.tar.gz)
+
+                      ### Cargo
+                      ```bash
+                      cargo install prisma-decrypt
+                      ```
+
+                      ## SHA256 Checksums
+                      - Intel: `${{ steps.hashes.outputs.intel_sha }}`
+                      - ARM64: `${{ steps.hashes.outputs.arm_sha }}`
+
+            - name: Output SHA256 for Homebrew formula
+              run: |
+                  echo "🍺 Update your Homebrew formula with these SHA256 hashes:"
+                  echo "Intel: ${{ steps.hashes.outputs.intel_sha }}"
+                  echo "ARM64: ${{ steps.hashes.outputs.arm_sha }}"
