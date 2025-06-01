@@ -17,7 +17,7 @@ middleware
 ## Installation
 
 ```sh
-brew tap sagefarrenholz/prisma-decrypt
+brew tap sagefarrenholz/prisma-decrypt https://github.com/sagefarrenholz/prisma-decrypt.git
 brew install prisma-decrypt
 ```
 
