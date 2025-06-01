@@ -1,4 +1,14 @@
-# Prisma Field Encryption Decrypt
+# prisma-decrypt
+
+<div align="center">
+
+[![Crates.io](https://img.shields.io/crates/v/prisma-decrypt)](https://crates.io/crates/prisma-decrypt)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/sagefarrenholz/prisma-decrypt/release.yml)](https://github.com/sagefarrenholz/prisma-decrypt/actions)
+[![License](https://img.shields.io/crates/l/prisma-decrypt)](https://github.com/sagefarrenholz/prisma-decrypt#license)
+
+**CLI tool for super fast prisma-field-encryption column decryption**
+
+</div>
 
 A fast cli tool that decrypts data encrypted in your database by the prisma
 middleware

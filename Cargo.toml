@@ -6,6 +6,7 @@ description = "CLI tool for super fast prisma-field-encryption column decryption
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sagefarrenholz/prisma-decrypt"
 readme = "README.md"
+exclude = ["dist/", "Formula/", ".github/"]
 
 [dependencies]
 aes-gcm = "0.10.3"
